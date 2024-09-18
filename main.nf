@@ -22,11 +22,13 @@ else {
 //--------------------------------------------------------------------------
 
 workflow {
-  trf(seqs, params.args) | collectFile(storeDir: params.outputDir, name: params.outputFileName)
+  trf(seqs, params.args) | trf2bed | collectFile(storeDir: params.outputDir, name: params.outputFileName)
 }
 
 
 process trf {
+  container = 'jbrestel/trf'
+
   input:
   path subsetFasta
   val args
@@ -64,5 +66,21 @@ process trf {
   else
     exit \$status
   fi
+  """
+}
+
+
+process trf2bed {
+  container = 'bioperl/bioperl:stable'
+
+  input:
+  path trf
+
+  output:
+  path "trf_subset.bed"
+
+  script:
+  """
+  trf2bed.pl $trf trf_subset.bed
   """
 }
