@@ -22,7 +22,11 @@ else {
 //--------------------------------------------------------------------------
 
 workflow {
-  trf(seqs, params.args) | trf2bed | collectFile(storeDir: params.outputDir, name: params.outputFileName)
+  trfResults = trf(seqs, params.args)
+  bedFiles = trf2bed(trfResults)
+  indexed = indexResults(bedFiles.collectFile())
+  indexed.bed.collectFile(storeDir: params.outputDir, name: params.outputFileName)
+  indexed.index.collectFile(storeDir: params.outputDir, name: params.outputFileName + ".gz.tbi")  
 }
 
 
@@ -82,5 +86,24 @@ process trf2bed {
   script:
   """
   trf2bed.pl $trf trf_subset.bed
+  """
+}
+
+
+process indexResults {
+  container = 'biocontainers/tabix:v1.9-11-deb_cv1'
+
+  input:
+    path bed
+
+  output:
+    path bed, emit: bed
+    path 'sorted_input.bed.gz.tbi', emit: index
+
+  script:
+  """
+  sort -k1,1 -k4,4n $bed > sorted_input.bed
+  bgzip sorted_input.bed
+  tabix -p bed sorted_input.bed.gz
   """
 }
