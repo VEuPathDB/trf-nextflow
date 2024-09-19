@@ -25,8 +25,6 @@ workflow {
   trfResults = trf(seqs, params.args)
   bedFiles = trf2bed(trfResults)
   indexed = indexResults(bedFiles.collectFile())
-  indexed.bed.collectFile(storeDir: params.outputDir, name: params.outputFileName)
-  indexed.index.collectFile(storeDir: params.outputDir, name: params.outputFileName + ".gz.tbi")  
 }
 
 
@@ -93,16 +91,20 @@ process trf2bed {
 process indexResults {
   container = 'biocontainers/tabix:v1.9-11-deb_cv1'
 
+  publishDir params.outputDir, mode: 'copy', pattern: 'sorted.bed',  saveAs: {filename->params.outputFileName}
+  publishDir params.outputDir, mode: 'copy', pattern: 'sorted_input.bed.gz.tbi',  saveAs: {filename->params.outputFileName+".gz.tbi"}
+
   input:
     path bed
 
   output:
-    path bed, emit: bed
-    path 'sorted_input.bed.gz.tbi', emit: index
+    path 'sorted.bed'
+    path 'sorted_input.bed.gz.tbi'
 
   script:
   """
   sort -k1,1 -k4,4n $bed > sorted_input.bed
+  cp sorted_input.bed sorted.bed
   bgzip sorted_input.bed
   tabix -p bed sorted_input.bed.gz
   """
