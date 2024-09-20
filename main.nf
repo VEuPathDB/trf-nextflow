@@ -47,12 +47,13 @@ process trf {
   status=\$?
   set -e
 
-  # annoying that trf returns a 1 exit code on success
-  if [ \$status -eq 0 ] || [ \$status -eq 1 ]; then
+  # annoying that trf returns a non zero exit code on success
+  # the exit status seems to be the number of sequences processed
+  if [ \$status -eq 0 ] || [ \$status -eq \$(grep '>' $subsetFasta | wc -l) ]; then
     if grep -q "Done." .command.err ; then
       echo "Success.. Done string found" >&2
     else
-      echo "Done String not found!" >&2
+    echo "Unexpected Error: Exit status \$status" >&2
      exit 1
   fi
 
@@ -103,7 +104,7 @@ process indexResults {
 
   script:
   """
-  sort -k1,1 -k4,4n $bed > ${outputFileName}
+  sort -k1,1 -k2,2n $bed > ${outputFileName}
   bgzip ${outputFileName}
   tabix -p bed ${outputFileName}.gz
   """
