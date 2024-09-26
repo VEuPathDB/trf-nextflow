@@ -29,7 +29,7 @@ workflow {
 
 
 process trf {
-  container = 'jbrestel/trf'
+  container = 'veupathdb/trf'
 
   input:
   path subsetFasta
