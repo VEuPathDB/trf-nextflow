@@ -30,7 +30,9 @@ while(<FILE>) {
 
         my @data = split(' ', $_);
 
-        print OUT "$sequence\t$data[0]\t$data[1]\n";
+        my $start = $data[0] - 1; #NOTE:  bedgraph format is zero based half open
+
+        print OUT "$sequence\t$start\t$data[1]\n";
     }
 }
 
