@@ -29,7 +29,7 @@ workflow {
 
 
 process trf {
-  container = 'veupathdb/trf:v1.0.0'
+  container = 'veupathdb/trf:1.0.0'
 
   input:
   path subsetFasta
